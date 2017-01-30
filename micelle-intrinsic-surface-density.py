@@ -337,4 +337,6 @@ if args['density']:
 	intdensityout.write("\n")
 	raddensityout.write("\n")
 
+print "Made a change"
+
 print "Program finished successfully!!!\n\nTime taken to execute analysis was %f\n\n" % (time.time()-start_time)
