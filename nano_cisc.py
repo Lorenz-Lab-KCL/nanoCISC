@@ -3,8 +3,10 @@ import theano.tensor as T
 import numpy as np 
 
 class nanoCISC :
-	# class which we will use to handle all of the various objects used in analysis
-	# nanoCISC object inherits attributes passed from user on the command line
+	"""
+	Class which we will use to handle all of the various objects used in analysis.
+	The nanoCISC object inherits attributes passed from user on the command line
+	 """
 	def __init__(self, nanoparticle,anchors,beta,calcrange,curves,targetinc,density): 
 		self.nano_particle = nanoparticle
 		self.anchors = anchors
