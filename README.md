@@ -1,2 +1,2 @@
-# mic-int-surf
-Python analysis code to calculate the intrinsic density profiles of quasi-spherical nanoparticles 
+# nanoCISC
+Python analysis code to calculate the intrinsic surfaces and density profiles of quasi-spherical nanoparticles 
