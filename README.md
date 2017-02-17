@@ -42,11 +42,11 @@ Specify floating point value for free parameter lambda (default is 15.0 as was u
 # Basic example of usage
 The following example will calculate the intrinsic density of only the oxygen atoms in water molecules, labelled as "Ow" and selected as atom group "type 9"  from the SDS+TP micelle trajectory: 
 ```
-python main.py -prefix "SDS-TP" -top "SDS+TP.data" -traj "SDS+TP-trajectory.dcd" -micelle "resname SDS" -anchors "type 8" -density "Ow" "type 9"
+python main.py -prefix "SDS-TP" -top "SDS+TP.data" -traj "SDS+TP-trajectory.dcd" -nanoparticle "resname SDS" -anchors "type 8" -density "Ow" "type 9"
 ```
 
 # Advanced example of usage
 The following example will calculate the intrinsic density of the oxygen atoms in water molecules, the hydrogen atoms in water molecules and the sodium counterions from the SDS+TP micelle trajectory. The calcrange, increment and value of lambda have all be explicitly defined. The surface will be written to an xyz file along with the local curvature of the surface:
 ```
-python nanoCISC.py -prefix "SDS-TP" -top "SDS+TP.data" -traj "SDS+TP-trajectory.dcd" -density "Ow" "type 9" "Hw" "type 10" "Na+" "type 1" -micelle "resname SDS" -anchors "type 8" -calcrange 40 -increment 0.5 -lambda 10.0 -XYZsurface 1 -curves 1
+python main.py -prefix "SDS-TP" -top "SDS+TP.data" -traj "SDS+TP-trajectory.dcd" -density "Ow" "type 9" "Hw" "type 10" "Na+" "type 1" -nanoparticle "resname SDS" -anchors "type 8" -calcrange 40 -increment 0.5 -lambda 10.0 -XYZsurface 1 -curves 1
 ```
