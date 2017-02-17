@@ -8,6 +8,9 @@ class nanoCISC :
 	The nanoCISC object inherits attributes passed from user on the command line
 	 """
 	def __init__(self, nanoparticle,anchors,beta,calcrange,curves,targetinc,density): 
+		"""
+		Define and setup all the attributes of a nanoCISC object
+		"""
 		self.nano_particle = nanoparticle
 		self.anchors = anchors
 		self.beta = beta
@@ -15,20 +18,21 @@ class nanoCISC :
 		self.curves = curves
 		self.target_increment = targetinc
 		self.density = density
-  		self.frames_processed = 0
-
-		self.intrinsicdensity = np.zeros((np.ceil(np.sqrt(3) * self.calculation_range).astype(np.int) ,len(self.density)), dtype = np.float32)
-		self.radialdensity=np.zeros((np.ceil(np.sqrt(3) * self.calculation_range).astype(np.int) ,len(self.density)), dtype = np.float32) # calculate radial density too
-		
+  		self.frames_processed = 0 # Count how many frames have been processed during analysis
+  		density_array_size = (np.sqrt(3) * self.calculation_range + 20.0).astype(np.int)
+  		# Array to store intrinsic density
+		self.intrinsicdensity = np.zeros((density_array_size ,len(self.density)), dtype = np.float32)
+		# Array to store radial density
+		self.radialdensity=np.zeros((density_array_size ,len(self.density)), dtype = np.float32) 
 		self.mCOM=np.zeros(3, dtype=np.float32) # position vector of nanoparticle centre of mass
 		self.ancVECS=np.zeros((len(self.anchors), 3), dtype = np.float32) # array to store unit vector components of S_i
 		self.ancVECsize=np.zeros(len(self.anchors), dtype = np.float32) # vector of magnitudes of S_i
 
-		# array to store values of depth at different angles
-		self.lookupdepth=np.zeros((int(np.floor(79)), int(np.floor(158))), dtype = np.float32) 
+		# Array to store values of depth at different angles
+		self.lookupdepth=np.zeros((79, 158), dtype = np.float32) 
 
-		# array to store local curvature values at different angles
-		self.lookupcurvature=np.zeros((int(np.floor(79)), int(np.floor(158))), dtype = np.float32)  
+		# Array to store local curvature values at different angles
+		self.lookupcurvature=np.zeros((79, 158), dtype = np.float32)  
 
 		# specify symbolic variables for theano 
 		THETA=T.dscalar() # specify that angles and BETA are scalars

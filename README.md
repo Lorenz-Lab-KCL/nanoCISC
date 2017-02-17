@@ -7,9 +7,9 @@ The nanoCISC ("(Not Always Naturally Obvious) the Continuous Intrinsic Surface a
 
 The script requires the NumPy (http://www.numpy.org/), MDAnalysis (http://www.mdanalysis.org/) and Theano (http://deeplearning.net/software/theano/) Python libraries to run.
 
-![Alt text](/HR_no-surface.png?raw=true "Nanoparticle")
+![Alt text](/sample-images/HR_no-surface.png?raw=true "Nanoparticle")
 
-![Alt text](/HR_surface.png?raw=true "Nanoparticle")
+![Alt text](/sample-images/HR_surface.png?raw=true "Nanoparticle")
 
 
 
