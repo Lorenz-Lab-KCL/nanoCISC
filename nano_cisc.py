@@ -19,14 +19,14 @@ class nanoCISC :
 		self.target_increment = targetinc
 		self.density = density
   		self.frames_processed = 0 # Count how many frames have been processed during analysis
-  		density_array_size = (np.sqrt(3) * self.calculation_range + 20.0).astype(np.int)
+  		density_array_size = np.ceil(3 * (self.calculation_range)).astype(np.int)
   		# Array to store intrinsic density
 		self.intrinsicdensity = np.zeros((density_array_size ,len(self.density)), dtype = np.float32)
 		# Array to store radial density
-		self.radialdensity=np.zeros((density_array_size ,len(self.density)), dtype = np.float32) 
-		self.mCOM=np.zeros(3, dtype=np.float32) # position vector of nanoparticle centre of mass
-		self.ancVECS=np.zeros((len(self.anchors), 3), dtype = np.float32) # array to store unit vector components of S_i
-		self.ancVECsize=np.zeros(len(self.anchors), dtype = np.float32) # vector of magnitudes of S_i
+		self.radialdensity = np.zeros((density_array_size, len(self.density)), dtype = np.float32) 
+		self.mCOM = np.zeros(3, dtype = np.float32) # position vector of nanoparticle centre of mass
+		self.ancVECS = np.zeros((len(self.anchors), 3), dtype = np.float32) # array to store unit vector components of S_i
+		self.ancVECsize = np.zeros(len(self.anchors), dtype = np.float32) # vector of magnitudes of S_i
 
 		# Array to store values of depth at different angles
 		self.lookupdepth=np.zeros((79, 158), dtype = np.float32) 

@@ -84,7 +84,7 @@ def calculate_density(system_, intcount, voldist):
 				system_.intrinsicdensity[j,i] += intcount[j,i] / voldist[j]
 
 
-def printintrinsicdensity(intdensityout,system_):
+def print_intrinsic_density(intdensityout,system_):
 	for i in range(-20,31):
 		intdensityout.write("%f " % (system_.target_increment * float(i)))
 		for j in range(len(system_.density)):
@@ -92,11 +92,11 @@ def printintrinsicdensity(intdensityout,system_):
 		intdensityout.write("\n")
 	intdensityout.write("\n")
 
-#def printradialdensity():
-#	for i in range(0,100):
-#			raddensityout.write("%f " % (targetinc*float(i)) )
-#			for j in range(len(density)):
-#				raddensityout.write("%f " % (radialdensity[i,j]/(float(count)*( (4*np.pi/3)*(i*targetinc+0.5*targetinc)**3 - (4*np.pi/3)*(i*targetinc-0.5*targetinc)**3 ) ) ) ) 
-#			raddensityout.write("\n")
-#		raddensityout.write("\n")
-#	raddensityout.write("\n")
+def print_radial_density(radialdensity, system_):
+	for i in range(0,100):
+			raddensityout.write("%f " % (targetinc*float(i)) )
+			for j in range(len(density)):
+				raddensityout.write("%f " % (radialdensity[i,j]/(float(count)*( (4*np.pi/3)*(i*targetinc+0.5*targetinc)**3 - (4*np.pi/3)*(i*targetinc-0.5*targetinc)**3 ) ) ) ) 
+			raddensityout.write("\n")
+		raddensityout.write("\n")
+	raddensityout.write("\n")
