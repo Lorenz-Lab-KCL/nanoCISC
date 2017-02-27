@@ -77,7 +77,7 @@ class initialise_user_input :
 			self.targetinc = 1.0
 
 		if args['XYZsurface']:
-			str = "%s-surface.xyz" % PREFIX
+			str = "%s-surface.xyz" % self.PREFIX
 			self.f_visualise_surface=open(str,"w")
 			print "Will write surface to file: %s\n" % str
 
