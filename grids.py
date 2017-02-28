@@ -7,7 +7,7 @@ of different spatial regions to be calculated
 during the analysis
 """
 class grid :
-	def __init__(self,system_):
+	def __init__(self, system_):
 
 		print("Setting up the grid from which to estimate the volume of the box with each d_int value...\n")
 		
@@ -25,7 +25,7 @@ class grid :
 		for x in range(nBOXS):
 			for y in range(nBOXS):
 				for z in range(nBOXS):
-					distindices[count,:] = [x,y,z]
+					distindices[count,:] = [x, y, z]
 					count += 1
 
 		DISTINDICES = theano.shared(value = distindices, name = 'DISTINDICES', borrow = True)

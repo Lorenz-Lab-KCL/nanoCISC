@@ -50,11 +50,11 @@ class initialise_user_input :
 			self.f_radial_density_out.write("# ") 
 
 			# set up groups for which the density will be calculated
-			for i in range(len(DENSITY)/2):
-				self.density.append(self.u.select_atoms(DENSITY[i*2+1]))
-				print "I have %d atoms in group: '%s' " % (len(self.density[i]), DENSITY[i*2])
-				self.f_intrinsic_density_out.write("%s " % DENSITY[i*2]) # Names of density groups printed to output file headers
-				self.f_radial_density_out.write("%s " % DENSITY[i*2]) 
+			for i in range(len(DENSITY) / 2):
+				self.density.append(self.u.select_atoms(DENSITY[i * 2 + 1]))
+				print "I have %d atoms in group: '%s' " % (len(self.density[i]), DENSITY[i * 2])
+				self.f_intrinsic_density_out.write("%s " % DENSITY[i * 2]) # Names of density groups printed to output file headers
+				self.f_radial_density_out.write("%s " % DENSITY[i * 2]) 
 			print ""
 			self.f_intrinsic_density_out.write("\n")
 			self.f_radial_density_out.write("\n")
@@ -78,7 +78,7 @@ class initialise_user_input :
 
 		if args['XYZsurface']:
 			str = "%s-surface.xyz" % self.PREFIX
-			self.f_visualise_surface=open(str,"w")
+			self.f_visualise_surface=open(str, "w")
 			print "Will write surface to file: %s\n" % str
 
 		if args['curves'] == 1:

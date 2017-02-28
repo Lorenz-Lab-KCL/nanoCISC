@@ -12,6 +12,13 @@ class nanoCISC :
 		"""
 		Define and setup all the attributes of a nanoCISC object
 		"""
+
+		# Define the angular resolution for which the surface is stored
+		self.angle_increment = 4
+		self.span_theta = 315 # 0 to pi
+		self.span_phi = 629 # 0 to 2pi
+
+		# Now  
 		self.nano_particle = nanoparticle
 		self.anchors = anchors
 		self.beta = beta
@@ -36,59 +43,52 @@ class nanoCISC :
 		self.lookupcurvature=np.zeros((79, 158), dtype = np.float32)  
 
 		# specify symbolic variables for theano 
-		THETA=T.dscalar() # specify that angles and BETA are scalars
-		PHI=T.dscalar()
-		BETA = theano.shared(value = self.beta, name = 'BETA', borrow = True)
-		MAG = theano.shared(value = self.ancVECsize, name = 'MAG', borrow = True) # vector that symbalises the magitudes of S_i
-		Si = theano.shared(value = self.ancVECS, name = 'Si', borrow = True) # matrix that symbalises S_i vectors
-		COM = theano.shared(value = self.mCOM, name = 'COM', borrow = True)
+		self.THETA=T.dscalar() # specify that angles and BETA are scalars
+		self.PHI=T.dscalar()
+		self.BETA = theano.shared(value = self.beta, name = 'BETA', borrow = True)
+		self.MAG = theano.shared(value = self.ancVECsize, name = 'MAG', borrow = True) # vector that symbalises the magitudes of S_i
+		self.Si = theano.shared(value = self.ancVECS, name = 'Si', borrow = True) # matrix that symbalises S_i vectors
+		self.COM = theano.shared(value = self.mCOM, name = 'COM', borrow = True)
 
-		# Define the angular resolution for which the surface is stored
-		self.angle_increment = 4
-		self.span_theta = 315
-		self.span_phi = 629 
+		self.refX=T.sin(self.THETA)*T.cos(self.PHI) # Symbolic expressions for unit vector components of direction vector
+		self.refY=T.sin(self.THETA)*T.sin(self.PHI) # These are needed for both depth and curvature function
+		self.refZ=T.cos(self.THETA)
+		
 
-		############################################################################
-		################### DEFINE SOME FUNCTIONS THAT WE WILL NEED LATER ##########
-		############################################################################
-		print "Setting up and compiling intrinsic surface function... sit tight.\n"
+		
+	def localdepth(self, theta, phi):
+		try: # If depth function has been compiled
+			return self.DEPTH(theta ,phi)
+		except:
+			############################################################################
+			########################## Define depth function ###########################
+			############################################################################
+			print "Setting up and compiling intrinsic surface function... sit tight.\n"
 
-		refX=T.sin(THETA)*T.cos(PHI) # expressions for unit vector components of direction vector
-		refY=T.sin(THETA)*T.sin(PHI)
-		refZ=T.cos(THETA)
+			self.depth = ((self.MAG * T.exp(-self.BETA * T.arccos(T.clip(T.dot(self.Si, [self.refX, self.refY, self.refZ]), -1.0, 1.0)) ** 2 )).sum() / 
+		        	(T.exp(-self.BETA * T.arccos(T.clip(T.dot(self.Si, [self.refX, self.refY, self.refZ]), -1.0, 1.0)) ** 2  )).sum() )
 
-		###################################################################################
-		################## define DEPTH and CALCTHETA/CALCPHI functions ###################
-		###################################################################################
-		depth = ((MAG * T.exp(-BETA * T.arccos(T.clip(T.dot(Si, [refX,refY,refZ]), -1.0, 1.0)) ** 2 )).sum() / 
-			       (T.exp(-BETA * T.arccos(T.clip(T.dot(Si, [refX,refY,refZ]),-1.0,1.0)) ** 2  )).sum() )
+			self.DEPTH = theano.function([self.THETA, self.PHI], self.depth) # depth function is compiled here
+			return self.DEPTH(theta ,phi)
 
-		self.DEPTH = theano.function([THETA,PHI], depth) # depth function is compiled here
-
-		pos = depth * [refX,refY,refZ] # x,y,z coords of surface at (THETA,PHI)
-		POS = theano.function([THETA,PHI],pos) # function that returns position of the surface is compiled here
-		print "Done.\n"
-
-		VEC = T.vector()
-		calctheta = T.arccos(T.clip(VEC[2] / T.sqrt(VEC[0] ** 2 + VEC[1] ** 2 + VEC[2] ** 2), -1.0, 1.0))
-		self.CALCTHETA = theano.function([VEC], calctheta) # function is compiled to calculate theta
-		calcphi = T.arctan2(VEC[1], VEC[0]) 
-		self.CALCPHI = theano.function([VEC], calcphi) # function is compiled to calculate phi
-
-		if self.curves == 1: # if curvature is switched on, i.e. -curves 1, then the curvature function is defined and compiled here
-
+		
+	def localcurvature(self, theta, phi):
+		try: # If curvature function has been compiled
+			return self.CURVATURE(theta, phi)
+		except:
 			#########################################################################################
 			############################## CURVATURE FUNCTION #######################################
 			#########################################################################################
-
+			
 			print "Setting up and compiling curvature function... sit tight, this could take a moment...\n"
+			pos = self.depth * [self.refX, self.refY, self.refZ] # x,y,z coords of surface at (THETA,PHI)
 			# set up derivatives for curvature function
-			gT = [T.grad(pos[0], THETA), T.grad(pos[1], THETA), T.grad(pos[2], THETA)]
-			gP = [T.grad(pos[0], PHI), T.grad(pos[1], PHI), T.grad(pos[2], PHI)]
+			gT = [T.grad(pos[0], self.THETA), T.grad(pos[1], self.THETA), T.grad(pos[2], self.THETA)]
+			gP = [T.grad(pos[0], self.PHI), T.grad(pos[1], self.PHI), T.grad(pos[2], self.PHI)]
 			# SECOND DERIVATIVES
-			gTT = [T.grad(gT[0], THETA), T.grad(gT[1], THETA), T.grad(gT[2], THETA)] 
-			gPP = [T.grad(gP[0], PHI), T.grad(gP[1], PHI), T.grad(gP[2], PHI)] 
-			gTP = [T.grad(gT[0], PHI), T.grad(gT[1], PHI), T.grad(gT[2], PHI)]
+			gTT = [T.grad(gT[0], self.THETA), T.grad(gT[1], self.THETA), T.grad(gT[2], self.THETA)] 
+			gPP = [T.grad(gP[0], self.PHI), T.grad(gP[1], self.PHI), T.grad(gP[2], self.PHI)] 
+			gTP = [T.grad(gT[0], self.PHI), T.grad(gT[1], self.PHI), T.grad(gT[2], self.PHI)]
 
 			E = T.dot(gT,gT) # calculate first fundamental form
 			F = T.dot(gT,gP)
@@ -97,29 +97,37 @@ class nanoCISC :
 			# calculate second fundamental form
 			# calculate normal vector to surface
 			n = ( [gT[1] * gP[2] - gT[2] * gP[1], gT[2] * gP[0] - gT[0] * gP[2], gT[0] * gP[1] - gT[1] * gP[0]] 
-			  /  T.sqrt(T.dot([gT[1] * gP[2] - gT[2] * gP[1], gT[2] * gP[0] - gT[0] * gP[2], gT[0] * gP[1] 
-			  - gT[1] * gP[0]] , [gT[1] * gP[2] - gT[2] * gP[1], gT[2] * gP[0] - gT[0] * gP[2], gT[0] * gP[1] - gT[1] * gP[0]]))
-			  )
+		  		/  T.sqrt(T.dot([gT[1] * gP[2] - gT[2] * gP[1], gT[2] * gP[0] - gT[0] * gP[2], gT[0] * gP[1] 
+		  		- gT[1] * gP[0]] , [gT[1] * gP[2] - gT[2] * gP[1], gT[2] * gP[0] - gT[0] * gP[2], gT[0] * gP[1] - gT[1] * gP[0]]))
+		  		)
 
 			L = T.dot(gTT, n)
 			M = T.dot(gTP, n)
 			N = T.dot(gPP, n)
 
-			self.CURVATURE = theano.function([THETA,PHI], (L * N - M ** 2)/( E * G - F ** 2)) 
+			self.CURVATURE = theano.function([self.THETA, self.PHI], (L * N - M ** 2)/(E * G - F ** 2)) 
 			print "Done.\n"	
+			return self.CURVATURE(theta, phi)
 
-	# define functions to return values from binary theano functions
-	def localdepth(self,a,b):
-		return self.DEPTH(a,b) 
+	 
+	def calctheta(self, vec):
+		try:
+			return self.CALCTHETA(vec)
+		except: # Else build function
+			VEC = T.vector()
+			calctheta = T.arccos(T.clip(VEC[2] / T.sqrt(VEC[0] ** 2 + VEC[1] ** 2 + VEC[2] ** 2), -1.0, 1.0))
+			self.CALCTHETA = theano.function([VEC], calctheta) # function is compiled to calculate theta
+			return self.CALCTHETA(vec)
 
-	def localcurvature(self,a,b):
-		return self.CURVATURE(a,b)
 
-	def calctheta(self,a):
-		return self.CALCTHETA(a)
-
-	def calcphi(self,a):
-		return self.CALCPHI(a)
+	def calcphi(self,vec):
+		try:
+			return self.CALCPHI(vec)
+		except:
+			VEC = T.vector()
+			calcphi = T.arctan2(VEC[1], VEC[0]) 
+			self.CALCPHI = theano.function([VEC], calcphi) # function is compiled to calculate phi
+			return self.CALCPHI(vec)
 
 
 	# A function to update the nanoparticle C.O.M. 
@@ -175,24 +183,24 @@ class nanoCISC :
 					outfile.write("Sfc %f %f %f\n" % (d * refvec[0], d * refvec[1], d * refvec[2]))
 
 
-	# Function to calculate the radial and intrinsic 
-	# densities of the nanoparticle
+	# Function to calculate the radial and intrinsic densities of the nanoparticle
 	def calculate_density(self, intcount, voldist):
+		# loop over each density group
 		for i in range(len(self.density)):
-			# loop over each density group
+			# loop over all atoms within density group i
 			for j in range(len(self.density[i])):
-				# loop over all atoms within density group i	
+				# if atom density[i][j] is within the grid that was specified then include it in the calculation	
 				if (abs(self.density[i][j].position[0] - self.mCOM[0] ) < self.calculation_range 
 				 	and abs(self.density[i][j].position[1] - self.mCOM[1] ) < self.calculation_range 
 				   		and abs(self.density[i][j].position[2] - self.mCOM[2]) < self.calculation_range ):
-				# if atom density[i][j] is within the grid that was specified then include it in the calculation
+
 					th = (np.rint(100 * self.calctheta(self.density[i][j].position - self.mCOM)) / self.angle_increment).astype(np.int64)
-					ph = self.calcphi(self.density[i][j].position-self.mCOM)
-					if ph < 0.00000:
+					ph = self.calcphi(self.density[i][j].position - self.mCOM)
+					if ph < 0.00000: # Bring phi into range 0-2pi
 						ph += 2 * np.pi
 					ph = (np.rint(100 * ph) / self.angle_increment).astype(np.int64)
 					intcount[ np.rint((1 / self.target_increment) * (np.linalg.norm(self.density[i][j].position - self.mCOM)
-					     	 - self.lookupdepth[th,ph])).astype(np.int64), i ] += 1.0
+					     	 - self.lookupdepth[th,ph])).astype(np.int64), i] += 1.0
 					self.radialdensity[np.rint((1 / self.target_increment) * (np.linalg.norm(self.density[i][j].position
 					         - self.mCOM))).astype(np.int64), i ] += 1.0
 
@@ -201,11 +209,11 @@ class nanoCISC :
 					self.intrinsicdensity[j,i] += intcount[j,i] / voldist[j]
 
 
-	def print_intrinsic_density(self,intdensityout):
-		for i in range(-20,31): # Print density for range -20-30 Angstroms
+	def print_intrinsic_density(self, intdensityout):
+		for i in range(-20,31): # Print density for range -20 -- 30 Angstroms
 			intdensityout.write("%f " % (self.target_increment * float(i)))
 			for j in range(len(self.density)):
-				intdensityout.write("%f " % (self.intrinsicdensity[i,j] / float(self.frames_processed)) ) 
+				intdensityout.write("%f " % (self.intrinsicdensity[i, j] / float(self.frames_processed)) ) 
 			intdensityout.write("\n")
 		intdensityout.write("\n")
 
